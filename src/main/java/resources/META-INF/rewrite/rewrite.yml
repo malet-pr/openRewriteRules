@@ -1,0 +1,8 @@
+type: specs.openrewrite.org/v1beta/recipe
+name: org.acme.recipes.UseOpenRewriteNullable
+displayName: Prefer OpenRewrite Nullable
+description: Replaces JetBrains Nullable with OpenRewrite Nullable.
+recipeList:
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: org.jetbrains.annotations.Nullable
+      newFullyQualifiedTypeName: org.openrewrite.internal.lang.Nullable
