@@ -1,16 +1,19 @@
 package org.acme.recipes;
 
-import org.intellij.lang.annotations.Language;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 import org.openrewrite.*;
 import org.openrewrite.xml.*;
 import org.openrewrite.xml.tree.Xml;
+import java.util.*;
 
 public class ChangeLibrariesInJSP extends Recipe {
+    private final List<ResourceMapping> mappings;
 
-    //String libraryName;
-    static String oldPath;
-    @Language("xml")
-    static String newPath;
+    public ChangeLibrariesInJSP(List<ResourceMapping> mappings) {
+        this.mappings = mappings;
+    }
 
     @Override
     public String getDisplayName() {
@@ -24,19 +27,37 @@ public class ChangeLibrariesInJSP extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new LibraryResourceVisitor();
+        return new LibraryResourceVisitor(mappings);
     }
 
-    private static class LibraryResourceVisitor<ResourceMapping> extends XmlVisitor<ExecutionContext> {
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class ResourceMapping {
+        private String libraryName;
+        private String oldPath;
+        private String newPath;
+
+    }
+
+    private static class LibraryResourceVisitor extends XmlVisitor<ExecutionContext> {
+        private final List<ResourceMapping> mappings;
+
+        public LibraryResourceVisitor(List<ResourceMapping> mappings) {
+            this.mappings = mappings;
+        }
+
         @Override
         public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
             String currentMarkup = tag.printTrimmed(getCursor());  // needs a Cursor object
-            if (currentMarkup.contains(oldPath)) {
-                try {
-                    return Xml.Tag.build(newPath);
-                } catch (Exception e) {
-                    ctx.getOnError().accept(e);
-                    return tag;
+            for (ResourceMapping mapping : mappings) {
+                if (currentMarkup.contains(mapping.getOldPath())) {
+                    try {
+                        return Xml.Tag.build(mapping.getNewPath());
+                    } catch (Exception e) {
+                        ctx.getOnError().accept(e);
+                        return tag;
+                    }
                 }
             }
             return super.visitTag(tag, ctx);
