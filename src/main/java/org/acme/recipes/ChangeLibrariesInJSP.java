@@ -1,19 +1,16 @@
 package org.acme.recipes;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import org.intellij.lang.annotations.Language;
 import org.openrewrite.*;
 import org.openrewrite.xml.*;
 import org.openrewrite.xml.tree.Xml;
-import java.util.*;
 
 public class ChangeLibrariesInJSP extends Recipe {
-    private final List<ResourceMapping> mappings;
 
-    public ChangeLibrariesInJSP(List<ResourceMapping> mappings) {
-        this.mappings = mappings;
-    }
+    //String libraryName;
+    static String oldPath;
+    @Language("xml")
+    static String newPath;
 
     @Override
     public String getDisplayName() {
@@ -27,37 +24,19 @@ public class ChangeLibrariesInJSP extends Recipe {
 
     @Override
     public TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new LibraryResourceVisitor(mappings);
+        return new LibraryResourceVisitor();
     }
 
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    public static class ResourceMapping {
-        private String libraryName;
-        private String oldPath;
-        private String newPath;
-
-    }
-
-    private static class LibraryResourceVisitor extends XmlVisitor<ExecutionContext> {
-        private final List<ResourceMapping> mappings;
-
-        public LibraryResourceVisitor(List<ResourceMapping> mappings) {
-            this.mappings = mappings;
-        }
-
+    private static class LibraryResourceVisitor<ResourceMapping> extends XmlVisitor<ExecutionContext> {
         @Override
         public Xml visitTag(Xml.Tag tag, ExecutionContext ctx) {
             String currentMarkup = tag.printTrimmed(getCursor());  // needs a Cursor object
-            for (ResourceMapping mapping : mappings) {
-                if (currentMarkup.contains(mapping.getOldPath())) {
-                    try {
-                        return Xml.Tag.build(mapping.getNewPath());
-                    } catch (Exception e) {
-                        ctx.getOnError().accept(e);
-                        return tag;
-                    }
+            if (currentMarkup.contains(oldPath)) {
+                try {
+                    return Xml.Tag.build(newPath);
+                } catch (Exception e) {
+                    ctx.getOnError().accept(e);
+                    return tag;
                 }
             }
             return super.visitTag(tag, ctx);

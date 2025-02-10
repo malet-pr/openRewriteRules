@@ -1,4 +1,2 @@
-org/acme/recipes/BootstrapCssRecipe.class
-org/acme/recipes/package-info.class
-org/acme/recipes/BootstrapCssRecipe$1.class
-org/acme/recipes/BootstrapCss.class
+org/acme/recipes/ChangeLibrariesInJSP.class
+org/acme/recipes/ChangeLibrariesInJSP$LibraryResourceVisitor.class
