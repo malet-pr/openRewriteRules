@@ -3,7 +3,6 @@ package org.acme.recipes;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.jetbrains.annotations.NotNull;
 import org.openrewrite.*;
 import org.openrewrite.xml.*;
 import org.openrewrite.xml.tree.Xml;
@@ -17,17 +16,17 @@ public class ChangeLibrariesInJSP extends Recipe {
     }
 
     @Override
-    public @NotNull String getDisplayName() {
+    public String getDisplayName() {
         return "Replace third-party library resource tags";
     }
 
     @Override
-    public @NotNull String getDescription() {
+    public String getDescription() {
         return "Replace webjars and JSTL-based library imports with direct resource paths";
     }
 
     @Override
-    public @NotNull TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new LibraryResourceVisitor(mappings);
     }
 
