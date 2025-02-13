@@ -9,23 +9,20 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.text.PlainTextVisitor;
 import org.openrewrite.text.PlainText;
 
-public class ChangeLibrariesInJSP extends Recipe {
+public class ChangeLibrariesJsInJSP extends Recipe {
 
     private static String libraryName;
-    private static String oldUrl1;
-    private static String oldUrl2;
+    private static String oldUrl;
     private static String newUrl;
 
     // Recipe configuration is injected via the constructor
     @JsonCreator
-    public ChangeLibrariesInJSP(
+    public ChangeLibrariesJsInJSP(
             @JsonProperty("libraryName") String libraryName,
-            @JsonProperty("oldUrl1") String oldUrl1,
-            @JsonProperty("oldUrl2") String oldUrl2,
+            @JsonProperty("oldUrl") String oldUrl,
             @JsonProperty("newUrl") String newUrl) {
         this.libraryName = libraryName;
-        this.oldUrl1 = oldUrl1;
-        this.oldUrl2 = oldUrl2;
+        this.oldUrl = oldUrl;
         this.newUrl = newUrl;
     }
 
@@ -50,41 +47,37 @@ public class ChangeLibrariesInJSP extends Recipe {
             String path = sourceFile.getSourcePath().toString();
             boolean isJsp = path.endsWith(".jsp");
             boolean isInWebInf = path.contains("WEB-INF");
+            if(isJsp && isInWebInf) {
+                System.out.println("Checking file: " + path + " (isJsp:" + isJsp + " , isInWebInf:" + isInWebInf + " )");
+            }
             return isJsp && isInWebInf;
         }
 
         @Override
         public @Nullable PlainText visitText(PlainText text, ExecutionContext ctx) {
+            System.out.println("Inside visitingText method");
+            System.out.println("libraryName: " + libraryName);
             String content = text.getText();
             // Check if the file contains our target
             if (!content.contains(libraryName)) {
                 return text;
             }
+            System.out.println("Found file containing library reference");
             // Find all link tags containing our library
             String[] lines = content.split("\n");
             StringBuilder newContent = new StringBuilder();
             boolean madeChanges = false;
             // Find all link tags containing our library
             for (String line : lines) {
-                if (line.contains("<link") && line.contains(libraryName)) {
+                if (line.contains("<script")  && line.contains(libraryName)) {
+                    System.out.println("Original line: ["+line+"]");
                     // Create new line with replacement
                     String newLine = line;
-                    if(oldUrl1 != null && line.contains(oldUrl1)) {
-                        newLine = line.replace(oldUrl1, newUrl);
-                    }else if(oldUrl2 != null && line.contains(oldUrl2)) {
-                        newLine = line.replace(oldUrl2, newUrl);
+                    if(oldUrl != null && line.contains(oldUrl)) {
+                        newLine = line.replace(oldUrl, newUrl);
                     }
                     madeChanges = true;
-                    newContent.append(newLine).append("\n");
-                } else if (line.contains("<script") && line.contains(libraryName)) {
-                    // Create new line with replacement
-                    String newLine = line;
-                    if(oldUrl1 != null && line.contains(oldUrl1)) {
-                        newLine = line.replace(oldUrl1, newUrl);
-                    }else if(oldUrl2 != null && line.contains(oldUrl2)) {
-                        newLine = line.replace(oldUrl2, newUrl);
-                    }
-                    madeChanges = true;
+                    System.out.println("Modified line: ["+newLine+"]");
                     newContent.append(newLine).append("\n");
                 } else {
                     newContent.append(line).append("\n");
@@ -93,6 +86,7 @@ public class ChangeLibrariesInJSP extends Recipe {
             if (!madeChanges) {
                 return text;
             }
+            System.out.println("Changes made to file, returning modified content");
             return text.withText(newContent.toString());
         }
     }
