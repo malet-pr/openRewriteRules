@@ -43,7 +43,6 @@ public class ChangeLibrariesInJSP extends Recipe {
             String oldUrl1 = "<link rel=\"stylesheet\" href=\"<c:url value='webjars/bootstrap/3.3.7-1/css/bootstrap.min.css'/>\" />";
             String oldUrl2 = "<link rel=\"stylesheet\" href=\"<c:url value='webjars/bootstrap/3.3.7-1/css/bootstrap.min.css'/>\"/>";
             String newUrl = "<link rel=\"stylesheet\" type=\"text/css\" href=\"resources/librerias/bootstrap/3.3.7-1/css/bootstrap.min.css\" />";
-            System.out.println("Processing file: " + getCursor().getPath());
             String content = text.getText();
             // Check if the file contains our target
             if (!content.contains(libraryName)) {
@@ -62,9 +61,6 @@ public class ChangeLibrariesInJSP extends Recipe {
                     System.out.println("Contains oldUrl2 pattern? " + line.contains(oldUrl2));
                     // Create new line with replacement
                     String newLine = line;
-                    // Try both trim and non-trim versions
-                    //String trimmedLine = line.trim();
-                    //System.out.println("Trimmed line: ["+trimmedLine+"]");
                     if(line.contains(oldUrl1)) {
                         newLine = line.replace(oldUrl1, newUrl);
                     }else if(line.contains(oldUrl2)) {
