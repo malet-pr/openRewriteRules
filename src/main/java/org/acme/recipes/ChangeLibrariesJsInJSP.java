@@ -47,22 +47,16 @@ public class ChangeLibrariesJsInJSP extends Recipe {
             String path = sourceFile.getSourcePath().toString();
             boolean isJsp = path.endsWith(".jsp");
             boolean isInWebInf = path.contains("WEB-INF");
-            if(isJsp && isInWebInf) {
-                System.out.println("Checking file: " + path + " (isJsp:" + isJsp + " , isInWebInf:" + isInWebInf + " )");
-            }
             return isJsp && isInWebInf;
         }
 
         @Override
         public @Nullable PlainText visitText(PlainText text, ExecutionContext ctx) {
-            System.out.println("Inside visitingText method");
-            System.out.println("libraryName: " + libraryName);
             String content = text.getText();
             // Check if the file contains our target
             if (!content.contains(libraryName)) {
                 return text;
             }
-            System.out.println("Found file containing library reference");
             // Find all link tags containing our library
             String[] lines = content.split("\n");
             StringBuilder newContent = new StringBuilder();
@@ -70,14 +64,12 @@ public class ChangeLibrariesJsInJSP extends Recipe {
             // Find all link tags containing our library
             for (String line : lines) {
                 if (line.contains("<script")  && line.contains(libraryName)) {
-                    System.out.println("Original line: ["+line+"]");
                     // Create new line with replacement
                     String newLine = line;
                     if(oldUrl != null && line.contains(oldUrl)) {
                         newLine = line.replace(oldUrl, newUrl);
                     }
                     madeChanges = true;
-                    System.out.println("Modified line: ["+newLine+"]");
                     newContent.append(newLine).append("\n");
                 } else {
                     newContent.append(line).append("\n");
@@ -86,7 +78,6 @@ public class ChangeLibrariesJsInJSP extends Recipe {
             if (!madeChanges) {
                 return text;
             }
-            System.out.println("Changes made to file, returning modified content");
             return text.withText(newContent.toString());
         }
     }
