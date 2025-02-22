@@ -61,7 +61,6 @@ public class ChangeLibrariesJsInJSP extends Recipe {
             String[] lines = content.split("\n");
             StringBuilder newContent = new StringBuilder();
             boolean madeChanges = false;
-            // Find all link tags containing our library
             for (String line : lines) {
                 if (line.contains("<script")  && line.contains(libraryName)) {
                     // Create new line with replacement
