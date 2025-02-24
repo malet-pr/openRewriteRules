@@ -9,20 +9,22 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.text.PlainTextVisitor;
 import org.openrewrite.text.PlainText;
 
+import java.util.List;
+
 public class ChangeLibrariesJsInJSP extends Recipe {
 
     private static String libraryName;
-    private static String oldUrl;
+    private static List<String> oldUrls;
     private static String newUrl;
 
     // Recipe configuration is injected via the constructor
     @JsonCreator
     public ChangeLibrariesJsInJSP(
             @JsonProperty("libraryName") String libraryName,
-            @JsonProperty("oldUrl") String oldUrl,
+            @JsonProperty("oldUrls") List<String> oldUrls,
             @JsonProperty("newUrl") String newUrl) {
         this.libraryName = libraryName;
-        this.oldUrl = oldUrl;
+        this.oldUrls = oldUrls;
         this.newUrl = newUrl;
     }
 
@@ -63,15 +65,18 @@ public class ChangeLibrariesJsInJSP extends Recipe {
             boolean madeChanges = false;
             for (String line : lines) {
                 if (line.contains("<script")  && line.contains(libraryName)) {
-                    // Create new line with replacement
+                    // Check against each old URL in the list
                     String newLine = line;
-                    if(oldUrl != null && line.contains(oldUrl)) {
-                        newLine = line.replace(oldUrl, newUrl);
+                    boolean replaced = false;
+                    for (String oldUrl : oldUrls) {
+                        if (line.contains(oldUrl)) {
+                            newLine = line.replace(oldUrl, newUrl);
+                            replaced = true;
+                            madeChanges = true;
+                            break;
+                        }
                     }
-                    madeChanges = true;
                     newContent.append(newLine).append("\n");
-                } else {
-                    newContent.append(line).append("\n");
                 }
             }
             if (!madeChanges) {

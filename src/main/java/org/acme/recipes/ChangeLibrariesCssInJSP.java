@@ -9,23 +9,22 @@ import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.text.PlainTextVisitor;
 import org.openrewrite.text.PlainText;
 
+import java.util.List;
+
 public class ChangeLibrariesCssInJSP extends Recipe {
 
     private static String libraryName;
-    private static String oldUrl1;
-    private static String oldUrl2;
+    private static List<String> oldUrls;
     private static String newUrl;
 
     // Recipe configuration is injected via the constructor
     @JsonCreator
     public ChangeLibrariesCssInJSP(
             @JsonProperty("libraryName") String libraryName,
-            @JsonProperty("oldUrl1") String oldUrl1,
-            @JsonProperty("oldUrl2") String oldUrl2,
+            @JsonProperty("oldUrls") List<String> oldUrls,
             @JsonProperty("newUrl") String newUrl) {
         this.libraryName = libraryName;
-        this.oldUrl1 = oldUrl1;
-        this.oldUrl2 = oldUrl2;
+        this.oldUrls = oldUrls;
         this.newUrl = newUrl;
     }
 
@@ -67,14 +66,17 @@ public class ChangeLibrariesCssInJSP extends Recipe {
             // Find all link tags containing our library
             for (String line : lines) {
                 if (line.contains("<link") && line.contains(libraryName)) {
-                    // Create new line with replacement
+                    // Check against each old URL in the list
                     String newLine = line;
-                    if(oldUrl1 != null && line.contains(oldUrl1)) {
-                        newLine = line.replace(oldUrl1, newUrl);
-                    }else if(oldUrl2 != null && line.contains(oldUrl2)) {
-                        newLine = line.replace(oldUrl2, newUrl);
+                    boolean replaced = false;
+                    for (String oldUrl : oldUrls) {
+                        if (line.contains(oldUrl)) {
+                            newLine = line.replace(oldUrl, newUrl);
+                            replaced = true;
+                            madeChanges = true;
+                            break;
+                        }
                     }
-                    madeChanges = true;
                     newContent.append(newLine).append("\n");
                 } else {
                     newContent.append(line).append("\n");
