@@ -65,23 +65,27 @@ public class ChangeLibrariesCssInJSP extends Recipe {
             boolean madeChanges = false;
             // Find all link tags containing our library
             for (String line : lines) {
+                String newLine = line;
+                // Only process lines with <link> tags containing our library
                 if (line.contains("<link") && line.contains(libraryName)) {
                     // Check against each old URL in the list
-                    String newLine = line;
-                    boolean replaced = false;
                     for (String oldUrl : oldUrls) {
                         if (line.contains(oldUrl)) {
                             newLine = line.replace(oldUrl, newUrl);
-                            replaced = true;
                             madeChanges = true;
                             break;
                         }
                     }
-                    newContent.append(newLine).append("\n");
-                } else {
-                    newContent.append(line).append("\n");
+                }
+                // Always append the line (original or modified)
+                newContent.append(newLine);
+                // Add the newline character to maintain the original structure
+                // Don't add a trailing newline at the end if the original didn't have one
+                if (newContent.length() < content.length()) {
+                    newContent.append("\n");
                 }
             }
+            // Only return a new text object if changes were made
             if (!madeChanges) {
                 return text;
             }
